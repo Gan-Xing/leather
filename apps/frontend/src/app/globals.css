@@ -1,0 +1,32 @@
+body,html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+div {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.ant-tabs-nav {
+    margin-top: 0!important;
+}
+.ant-tabs-content {
+    height: 100%!important;
+}
+.ant-tabs-tabpane {
+    height: 100%!important;
+}
+.ant-tabs-bottom {
+    height: 100%!important;
+}
+.ant-tabs-nav-list {
+    width: 100%;
+}
+.ant-tabs-tab {
+    flex:1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
