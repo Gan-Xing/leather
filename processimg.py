@@ -1,6 +1,7 @@
 import os
 from PIL import Image
 from torchvision import transforms
+import numpy as np
 
 # 定义图像转换函数
 def get_transforms():
@@ -22,12 +23,15 @@ def process_and_save_images(image_paths, output_folder):
     for image_path in image_paths:
         img = Image.open(image_path).convert("RGB")
         img = transform(img)  # 应用转换
+        img = img.numpy()  # 将Tensor转换为numpy数组
 
-        # 转换为PIL Image以保存
-        img = transforms.ToPILImage()(img)
+        # 将图像数据从[-1, 1]映射回[0, 1]并保存为无损PNG格式
+        img = (img * 0.5 + 0.5) * 255  # 取消归一化
+        img = img.transpose(1, 2, 0).astype(np.uint8)  # 调整通道顺序和数据类型
+        img = Image.fromarray(img)
         base_name = os.path.basename(image_path)
         output_path = os.path.join(output_folder, base_name)
-        img.save(output_path, format='JPEG')  # 保存图像
+        img.save(output_path, format='PNG')  # 使用PNG格式保存图像
         print(f"Processed and saved {output_path}")
 
 # 主函数，列出要处理的图像路径

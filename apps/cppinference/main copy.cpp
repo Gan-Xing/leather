@@ -21,6 +21,14 @@ std::vector<float> softmax(const std::vector<float>& z) {
     return exp_z;
 }
 
+// 函数：执行中心裁剪
+cv::Mat centerCrop(const cv::Mat &img, const int cropSize) {
+    const int offsetW = (img.cols - cropSize) / 2;
+    const int offsetH = (img.rows - cropSize) / 2;
+    const cv::Rect roi(offsetW, offsetH, cropSize, cropSize);
+    return img(roi);
+}
+
 // 主函数
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -31,6 +39,7 @@ int main(int argc, char** argv) {
     const char* image_path = argv[1];
     const char* model_path = "../../models/resnet18_leather_bestjit.onnx"; // 相对于cppinference目录
 
+
     // 初始化ONNX Runtime
     Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "test");
     Ort::SessionOptions session_options;
@@ -39,21 +48,31 @@ int main(int argc, char** argv) {
     // 加载模型
     Ort::Session session(env, model_path, session_options);
 
-    // 加载图像（假设图像已经预处理完成）
-    cv::Mat img = cv::imread(image_path, cv::IMREAD_UNCHANGED);
+    // 加载和预处理图像
+    cv::Mat img = cv::imread(image_path);
     if (img.empty()) {
         std::cerr << "Failed to load image." << std::endl;
         return 1;
     }
+    cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
 
-    // 确保图像是浮点类型，进行归一化
-    img.convertTo(img, CV_32F, 1.0 / 255.0);  // 将像素值范围从[0, 255]映射到[0, 1]
-    cv::subtract(img, cv::Scalar(0.485, 0.456, 0.406), img, cv::noArray(), -1);
-    cv::divide(img, cv::Scalar(0.229, 0.224, 0.225), img, 1, -1);
+    // 先执行中心裁剪至512x512
+    cv::Mat img_cropped = centerCrop(img, 512);
 
-    std::vector<float> img_data((float*)img.datastart, (float*)img.dataend);
+    // 然后调整大小至256x256
+    cv::resize(img_cropped, img_cropped, cv::Size(256, 256));
 
-    std::vector<int64_t> input_tensor_shape = {1, img.channels(), img.rows, img.cols};
+    // 再次执行中心裁剪至224x224
+    img_cropped = centerCrop(img_cropped, 224);
+
+    // 数据转换为Tensor
+    img_cropped.convertTo(img_cropped, CV_32F, 1.0 / 255.0);
+    cv::subtract(img_cropped, cv::Scalar(0.485, 0.456, 0.406), img_cropped, cv::noArray(), -1);
+    cv::divide(img_cropped, cv::Scalar(0.229, 0.224, 0.225), img_cropped, 1, -1);
+
+    std::vector<float> img_data((float*)img_cropped.datastart, (float*)img_cropped.dataend);
+
+    std::vector<int64_t> input_tensor_shape = {1, 3, 224, 224};
     std::vector<float> output_tensor_values(8); // 假设模型有8个输出
     std::vector<int64_t> output_tensor_shape = {1, 8};
 
@@ -71,7 +90,7 @@ int main(int argc, char** argv) {
     int result_idx = std::distance(softmax_output.begin(), std::max_element(softmax_output.begin(), softmax_output.end()));
 
     // 输出预测结果
-    std::cout << "Predicted Class Index: " << result_idx << std::endl; // 只输出结果
+    std::cout << result_idx << std::endl; // 只输出结果
 
     return 0;
 }
