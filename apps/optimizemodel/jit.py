@@ -9,7 +9,9 @@ if __name__ == '__main__':
     model_dir = os.path.join(current_dir, '..', '..', 'models')
 
     model = models.resnet18()
-    model.fc = nn.Linear(in_features=512, out_features=12, bias=True)
+    model.fc = nn.Sequential(
+            nn.Linear(in_features=512, out_features=8)
+    )
     state_dict = torch.load(os.path.join(model_dir, 'best.pth'), map_location=torch.device('cpu'))
     model.load_state_dict(state_dict)
     model.eval()

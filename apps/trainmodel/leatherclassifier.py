@@ -30,7 +30,7 @@ class LeatherClassifier:
         self.model.fc = nn.Sequential(
             # nn.Dropout(0.5),  # Adding Dropout
             # nn.Linear(2048, 13), # Resnet50
-            nn.Linear(in_features=512, out_features=5), # Resnet18
+            nn.Linear(in_features=512, out_features=8), # Resnet18
         )
 
         # VGG16
@@ -41,7 +41,7 @@ class LeatherClassifier:
         self.best_acc = 0
         self.train_data_dir = train_data_dir
         self.test_data_dir = test_data_dir
-        self.total_epoch = 5
+        self.total_epoch = 20
         self.lr = 0.01
         self.loss_fn = nn.CrossEntropyLoss()
         self.acc_fn = AccuracyScore()
