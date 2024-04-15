@@ -60,3 +60,10 @@ def predict(img_path):
 if __name__ == '__main__':
     # 创建变换
     predict("ceramic_texture.jpg")
+    predict("fabric1_texture.jpg")
+    predict("fabric2_texture.jpg")
+    predict("leather_texture.jpg")
+    predict("metal_texture.jpg")
+    predict("stone_texture.jpg")
+    predict("stone2_texture.jpg")
+    predict("wood_texture.jpg")
