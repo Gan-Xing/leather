@@ -59,4 +59,4 @@ def predict(img_path):
 
 if __name__ == '__main__':
     # 创建变换
-    predict("沙发2纹理测试.jpg")
+    predict("ceramic_texture.jpg")
